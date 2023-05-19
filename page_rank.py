@@ -4,15 +4,15 @@ import scipy.sparse
 import networkx as nx
 
 
-# Generates a random web link structure, and finds the
-# corresponding PageRank vector.  The number of inbound
-# links for each page is controlled by a power law
-# distribution.
-#
-# This code should work for up to a few million pages on a modest machine.
 class web:
     """
     https://michaelnielsen.org/blog/using-your-laptop-to-compute-pagerank-for-millions-of-webpages/
+    Generates a random web link structure, and finds the
+    corresponding PageRank vector.  The number of inbound
+    links for each page is controlled by a power law
+    distribution.
+
+    This code should work for up to a few million pages on a modest machine.
     """
 
     def __init__(self, n):
@@ -40,7 +40,6 @@ def paretosample(n, power=2.0):
     return m
 
 
-# Randomize a network
 def random_web(n=1000, power=2.0):
     """
     Returns a web object with n pages, and where each
@@ -66,20 +65,18 @@ def random_web(n=1000, power=2.0):
     return g
 
 
-# Compute page-rank.
-# Input:
-# g - adjancency matrix representing the network (in sparse format!)
-# p - vectir
-# beta -  non-dangling probability
-# Output:
-# v - vector = M*v = (beta*g + (1-beta)*D) * v
-
 def step(g, p, beta=0.85):
     """
     Performs a single step in the PageRank computation,
     with web g and parameter s.  Applies the corresponding M
     matrix to the vector p, and returns the resulting
     vector.
+    arguments:
+        g - adjancency matrix representing the network (in sparse format!)
+        p - vector
+        beta -  non-dangling probability
+    returns:
+        v - vector = M*v = (beta*g + (1-beta)*D) * v
     """
     n = g.size
     v = np.matrix(np.zeros((n, 1)))
@@ -93,19 +90,18 @@ def step(g, p, beta=0.85):
     return v / np.sum(v)
 
 
-# Compute page-rank.
-# Input:
-# g - adjancency matrix representing the network (in sparse format!)
-# beta - non-dangling probability
-# tolerance - stopping criteria
-# Output:
-# p - vector of page-rank values
-def pagerank(g, beta=0.85, tolerance=0.00001):
+def PageRank(g, beta=0.85, tolerance=0.00001):
     """
     Returns the PageRank vector for the web g and
     parameter s, where the criterion for convergence is that
     we stop when M^(j+1)P-M^jP has length less than
     tolerance, in l1 norm.
+    arguments:
+        g - adjancency matrix representing the network (in sparse format!)
+        tolerance - stopping criteria
+        beta -  non-dangling probability
+    returns:
+        p - vector of page-rank values
     """
     n = g.size
     p = np.matrix(np.ones((n, 1))) / n
@@ -120,16 +116,24 @@ def pagerank(g, beta=0.85, tolerance=0.00001):
         iteration += 1
     return np.array(p).reshape(n)  # return one dimensional array
 
-# Compute Personalized page-rank.
-# Input:
-# G - graph  𝐺=(𝑉,𝐸)
-# U - a subset of nodes given as a list  𝑈⊂𝑉
-# T - a maximal number of iterations
-# tolerance - stopping criteria
-# 𝛽 - probability to moves to a random node
-# Output:
-# p - vector of Personalized page-rank values
+
 def PersonalizedPageRank(G, U, T=100, tolerance=1e-06, beta=0.85):
+    """
+        Compute Personalized page-rank:
+        The function then outputs the personalized page-rank vector for the graph G and given these parameters
+        The vector is defined as the stationary distribution of a random walk that with probability  1−𝛽
+          moves from a node to one of its neighbours, and with probability  𝛽
+          moves to a random node in the set  𝑈
+
+        Input:
+        G - graph  𝐺=(𝑉,𝐸)
+        U - a subset of nodes given as a list  𝑈⊂𝑉
+        T - a maximal number of iterations
+        tolerance - stopping criteria
+        𝛽 - probability to moves to a random node
+        Output:
+        p - vector of Personalized page-rank values
+    """
     N = len(G)
     nodelist = list(G.nodes())
     M = nx.to_scipy_sparse_matrix(G, nodelist=nodelist, dtype=float)
@@ -162,4 +166,3 @@ def PersonalizedPageRank(G, U, T=100, tolerance=1e-06, beta=0.85):
         change = np.sum(np.abs(x - xlast))
         if change < tolerance:
             return dict(zip(nodelist, map(float, x)))
-
